@@ -63,7 +63,7 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 
 	//pasar update particles al final de aqui -> LilSpheres::updateParticles(0, LilSpheres::maxParticles, partVerts);
 	//updatea las particulas
-	LilSpheres::updateParticles(0, SHRT_MAX, partVerts);
+	//LilSpheres::updateParticles(0, SHRT_MAX, partVerts);
 	
 }
 void PhysicsCleanup() { //hacer delete de todos los new, etc
