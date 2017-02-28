@@ -1,7 +1,11 @@
 #include <imgui\imgui.h>
 #include <imgui\imgui_impl_glfw_gl3.h>
 
+#include <glm\gtc\type_ptr.hpp>
+
+
 #include "../Particle.h"
+#include "../Solvers.h"
 
 namespace LilSpheres {
 	extern const int maxParticles;
@@ -29,12 +33,38 @@ void GUI() {
 void PhysicsInit() { //inicializar aqui las particulas
 	//TODO
 
+	for (int i = 0; i < SHRT_MAX; i++) {
+		partArray[i] = new Particle;
+	}
+
 
 
 }
-void PhysicsUpdate(float dt) { //calcular las affeciones sobre las particulas
+void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 	//TODO
+
+	int solver = EULER;
+
+	if (solver == EULER) {
+		for (int i = 0; i < SHRT_MAX; i++) {
+			Euler_Solver(partArray[i], dt);
+		}
+	}
+	else if (solver == VERLET) {
+		for (int i = 0; i < SHRT_MAX; i++) {
+			Verlet_Solver(partArray[i], dt);
+		}
+	}
+	else {
+		//ERROR
+	}
+
+	//cada 3000/33.3 entradas 1 seg
+
 	//pasar update particles al final de aqui -> LilSpheres::updateParticles(0, LilSpheres::maxParticles, partVerts);
+	//updatea las particulas
+	LilSpheres::updateParticles(0, SHRT_MAX, partVerts);
+	
 }
 void PhysicsCleanup() { //hacer delete de todos los new, etc
 	//TODO

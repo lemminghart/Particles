@@ -39,7 +39,7 @@ void setupPrims() {
 	//	you can change it if you want, but be aware of troubled outcomes, 
 	//	like having to create multiple buffers because of interger overflow...)
 	//Link the parameter of setupParticles to the max number of particles in the physics simulation you want to have
-	LilSpheres::setupParticles(LilSpheres::maxParticles);
+	//LilSpheres::setupParticles(LilSpheres::maxParticles);
 	LilSpheres::setupParticles(SHRT_MAX);
 
 	
@@ -75,5 +75,5 @@ void renderPrims() {
 	//Depending the alive particles that have to be rendered, you may need to do multiple calls for this function
 	if(renderParticles)
 		LilSpheres::drawParticles(0, LilSpheres::maxParticles);
-	//
+	//esta parte habra que cambiarla para hacer 2 llamadas: movida de los apuntadores
 }

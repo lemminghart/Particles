@@ -1,8 +1,11 @@
 #pragma once
+#include <vector>
 
 struct Coord {
 	float x, y, z;
 };
+
+std::vector <Particle *> partArray(SHRT_MAX); //vector de particulas
 
 class Particle {
 public:

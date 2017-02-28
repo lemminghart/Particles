@@ -4,7 +4,7 @@
 
 #define GRAVITY -9.81
 
-enum SOLVER {EULER = 0, VELVET = 1};
+enum SOLVER {EULER = 0, VERLET = 1};
 
 static void Euler_Solver(Particle *part, float dt) {
 	//set the current position & speed as the last
