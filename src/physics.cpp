@@ -6,6 +6,7 @@
 
 #include "../Particle.h"
 #include "../Solvers.h"
+#include "../Collision.h"
 
 namespace LilSpheres {
 	extern const int maxParticles;
@@ -34,7 +35,8 @@ void PhysicsInit() { //inicializar aqui las particulas
 	//TODO
 
 	for (int i = 0; i < SHRT_MAX; i++) {
-		partArray[i] = new Particle;
+		Particle *temp = new Particle;
+		partArray.push_back(*temp);
 	}
 
 
@@ -47,12 +49,14 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 
 	if (solver == EULER) {
 		for (int i = 0; i < SHRT_MAX; i++) {
-			Euler_Solver(partArray[i], dt);
+			Euler_Solver(&partArray[i], dt);
+			Collision_Manager(&partArray[i]);
 		}
 	}
 	else if (solver == VERLET) {
 		for (int i = 0; i < SHRT_MAX; i++) {
-			Verlet_Solver(partArray[i], dt);
+			Verlet_Solver(&partArray[i], dt);
+			Collision_Manager(&partArray[i]);
 		}
 	}
 	else {
@@ -61,10 +65,17 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 
 	//cada 3000/33.3 entradas 1 seg
 
+	float *partVerts = new float[SHRT_MAX * 3];
+	for (int i = 0; i < SHRT_MAX; ++i) {
+		partVerts[i * 3 + 0] = partArray[i].currentPos.x;
+		partVerts[i * 3 + 1] = partArray[i].currentPos.y;
+		partVerts[i * 3 + 2] = partArray[i].currentPos.z;
+	}
+
 	//pasar update particles al final de aqui -> LilSpheres::updateParticles(0, LilSpheres::maxParticles, partVerts);
 	//updatea las particulas
-	//LilSpheres::updateParticles(0, SHRT_MAX, partVerts);
-	
+	LilSpheres::updateParticles(0, SHRT_MAX, partVerts);
+	delete[] partVerts;
 }
 void PhysicsCleanup() { //hacer delete de todos los new, etc
 	//TODO

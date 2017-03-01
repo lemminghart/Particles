@@ -4,7 +4,7 @@
 Particle::Particle() {
 	//setup the initial parameters (position)
 	currentPos.x = 0;
-	currentPos.y = 0;
+	currentPos.y = 5;
 	currentPos.z = 0;
 
 	//setup the initial speed

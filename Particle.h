@@ -5,8 +5,6 @@ struct Coord {
 	float x, y, z;
 };
 
-std::vector <Particle *> partArray(SHRT_MAX); //vector de particulas
-
 class Particle {
 public:
 	Coord currentPos, lastPos; //Stores Current and Last Position
@@ -16,3 +14,5 @@ public:
 	Particle();
 	~Particle();
 };
+
+static std::vector <Particle> partArray; //vector de particulas
