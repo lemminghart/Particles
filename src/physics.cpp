@@ -35,8 +35,8 @@ void PhysicsInit() { //inicializar aqui las particulas
 	//TODO
 
 	for (int i = 0; i < SHRT_MAX; i++) {
-		Particle *temp = new Particle;
-		partArray.push_back(*temp);
+		Particle temp;
+		partArray.push_back(temp);
 	}
 
 
@@ -45,7 +45,8 @@ void PhysicsInit() { //inicializar aqui las particulas
 void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 	//TODO
 
-	int solver = EULER;
+	int solver = VERLET;
+	//int solver = EULER;
 
 	if (solver == EULER) {
 		for (int i = 0; i < SHRT_MAX; i++) {
@@ -72,11 +73,15 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 		partVerts[i * 3 + 2] = partArray[i].currentPos.z;
 	}
 
-	//pasar update particles al final de aqui -> LilSpheres::updateParticles(0, LilSpheres::maxParticles, partVerts);
 	//updatea las particulas
 	LilSpheres::updateParticles(0, SHRT_MAX, partVerts);
 	delete[] partVerts;
 }
 void PhysicsCleanup() { //hacer delete de todos los new, etc
-	//TODO
+	
+	/*for (int i = 0; i < SHRT_MAX; i++) {
+		partArray.pop_back();
+	}
+
+	partArray.clear();*/
 }
