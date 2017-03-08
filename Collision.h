@@ -8,21 +8,29 @@ static float Calculate_d(Coord n, Coord plane_point) {
 }
 
 //calcula la Velocidad normal en un rebote (para aplicar la friccion)
-static Coord Calculate_V_Normal(Coord n, Particle *part) {
-	Coord Vn;
-	Vn.x = ((n.x * part->currentV.x) + (n.y * part->currentV.y) + (n.z * part->currentV.z)) * n.x;
-	Vn.y = ((n.x * part->currentV.x) + (n.y * part->currentV.y) + (n.z * part->currentV.z)) * n.y;
-	Vn.z = ((n.x * part->currentV.x) + (n.y * part->currentV.y) + (n.z * part->currentV.z)) * n.z;
+static Coord Calculate_V_Normal(Coord n, Coord v) {
+	Coord Vn; //normal vector
+
+	//v may be the Particle velocity (EULER) or the Lastpos->CurrentPos vector in VERLET
+
+	//Vn = (V·n) * n
+	Vn.x = ((n.x * v.x) + (n.y * v.y) + (n.z * v.z)) * n.x;
+	Vn.y = ((n.x * v.x) + (n.y * v.y) + (n.z * v.z)) * n.y;
+	Vn.z = ((n.x * v.x) + (n.y * v.y) + (n.z * v.z)) * n.z;
 
 	return Vn;
 }
 
 //calcula la Velocidad tangencial en un rebote (para aplicar la friccion)
-static Coord Calculate_V_Tangential(Coord n, Particle *part) {
-	Coord Vt;
-	Vt.x = part->currentV.x - Calculate_V_Normal(n, part).x;
-	Vt.y = part->currentV.x - Calculate_V_Normal(n, part).y;
-	Vt.z = part->currentV.x - Calculate_V_Normal(n, part).z;
+static Coord Calculate_V_Tangential(Coord n, Coord v) {
+	Coord Vt; //tangential vector
+
+	//v may be the Particle velocity (EULER) or the Lastpos->CurrentPos vector in VERLET
+
+	//Vt = V - Vn
+	Vt.x = v.x - Calculate_V_Normal(n, v).x;
+	Vt.y = v.y - Calculate_V_Normal(n, v).y;
+	Vt.z = v.z - Calculate_V_Normal(n, v).z;
 
 	return Vt;
 }
@@ -30,10 +38,10 @@ static Coord Calculate_V_Tangential(Coord n, Particle *part) {
 //Calcula la colisión de una particula con el plano
 static void Calculate_Plane_Collision(Coord n, Particle *part, float d, int solver) {
 	//Coeficiente de elasticidad
-	float E = 0.6f;
+	float E = 0.7f;
 
 	//Coeficiente de friccion
-	float F = 0.5f;
+	float F = 0.3f;
 
 	//Calculate new position of the particle
 	part->currentPos.x = part->currentPos.x - ((1 + E) * (((n.x * part->currentPos.x) + (n.y * part->currentPos.y) + (n.z * part->currentPos.z)) + d) * n.x);
@@ -48,25 +56,31 @@ static void Calculate_Plane_Collision(Coord n, Particle *part, float d, int solv
 		part->currentV.z = part->currentV.z - ((1 + E) * ((n.x * part->currentV.x) + (n.y * part->currentV.y) + (n.z * part->currentV.z)) * n.z);
 
 		//apply friction on EULER
-		part->currentV.x = part->currentV.x - F * Calculate_V_Tangential(n, part).x;
-		part->currentV.y = part->currentV.y - F * Calculate_V_Tangential(n, part).y;
-		part->currentV.z = part->currentV.z - F * Calculate_V_Tangential(n, part).z;
+		part->currentV.x = part->currentV.x - F * Calculate_V_Tangential(n, part->currentV).x;
+		part->currentV.y = part->currentV.y - F * Calculate_V_Tangential(n, part->currentV).y;
+		part->currentV.z = part->currentV.z - F * Calculate_V_Tangential(n, part->currentV).z;
 	}
 	if (solver == VERLET) {
 		//Mirroring the last pos, so we can calculate new direction properly
 		// P = P' - 2(n·P' + d) · n
-		part->lastPos.x = part->lastPos.x - (2 * ((n.x * part->lastPos.x) + (n.y * part->lastPos.y) + (n.z * part->lastPos.z) + d) * n.x);
-		part->lastPos.y = part->lastPos.y - (2 * ((n.x * part->lastPos.x) + (n.y * part->lastPos.y) + (n.z * part->lastPos.z) + d) * n.y);
-		part->lastPos.z = part->lastPos.z - (2 * ((n.x * part->lastPos.x) + (n.y * part->lastPos.y) + (n.z * part->lastPos.z) + d) * n.z);
+		part->lastPos.x = part->lastPos.x - ((1 + E) * ((n.x * part->lastPos.x) + (n.y * part->lastPos.y) + (n.z * part->lastPos.z) + d) * n.x);
+		part->lastPos.y = part->lastPos.y - ((1 + E) * ((n.x * part->lastPos.x) + (n.y * part->lastPos.y) + (n.z * part->lastPos.z) + d) * n.y);
+		part->lastPos.z = part->lastPos.z - ((1 + E)* ((n.x * part->lastPos.x) + (n.y * part->lastPos.y) + (n.z * part->lastPos.z) + d) * n.z);
 
 		//apply Friction and elasticity
-		int alpha = 1 - E; //elasticity
+		float alpha = 1 - E; //elasticity
 		//friction uses the raw variable F of friction
 
+		//previoulsy we calculate the vector between lastPos & currentPos to calculate Normal & Tangential vectors
+		Coord vector;
+		vector.x = part->currentPos.x - part->lastPos.x;
+		vector.y = part->currentPos.y - part->lastPos.y;
+		vector.z = part->currentPos.z - part->lastPos.z;
+
 		// P = P + alpha * Vn + F * Vt
-		part->lastPos.x = part->lastPos.x + (alpha * Calculate_V_Normal(n, part).x) + (F * Calculate_V_Tangential(n, part).x);
-		part->lastPos.y = part->lastPos.y + (alpha * Calculate_V_Normal(n, part).y) + (F * Calculate_V_Tangential(n, part).y);
-		part->lastPos.z = part->lastPos.z + (alpha * Calculate_V_Normal(n, part).z) + (F * Calculate_V_Tangential(n, part).z);
+		part->lastPos.x = part->lastPos.x + (alpha * Calculate_V_Normal(n, vector).x) + (F * Calculate_V_Tangential(n, vector).x);
+		part->lastPos.y = part->lastPos.y + (alpha * Calculate_V_Normal(n, vector).y) + (F * Calculate_V_Tangential(n, vector).y);
+		part->lastPos.z = part->lastPos.z + (alpha * Calculate_V_Normal(n, vector).z) + (F * Calculate_V_Tangential(n, vector).z);
 	}
 }
 

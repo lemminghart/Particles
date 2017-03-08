@@ -3,7 +3,6 @@
 
 #include <glm\gtc\type_ptr.hpp>
 
-
 #include "../Particle.h"
 #include "../Solvers.h"
 #include "../Collision.h"
@@ -45,7 +44,7 @@ void PhysicsInit() { //inicializar aqui las particulas
 void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 	//TODO
 
-	int solver = VERLET;
+	int solver = EULER;
 	//int solver = EULER;
 
 	if (solver == EULER) {
@@ -79,6 +78,7 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 }
 void PhysicsCleanup() { //hacer delete de todos los new, etc
 	
+	//NOT NECESSARY. see PhysicsInit() on this document.
 	/*for (int i = 0; i < SHRT_MAX; i++) {
 		partArray.pop_back();
 	}
