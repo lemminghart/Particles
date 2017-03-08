@@ -38,6 +38,7 @@ static void Verlet_Solver(Particle *part, float dt) {
 	part->lastPos = tmp;
 
 	//Calculate velocity
+	//  V = (X_t+1 - X_t) / dt
 	part->currentV.x = (part->currentPos.x - part->lastPos.x) / dt;
 	part->currentV.y = (part->currentPos.y - part->lastPos.y) / dt;
 	part->currentV.z = (part->currentPos.z - part->lastPos.z) / dt;

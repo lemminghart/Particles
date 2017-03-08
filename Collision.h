@@ -28,7 +28,7 @@ static Coord Calculate_V_Tangential(Coord n, Particle *part) {
 }
 
 //Calcula la colisión de una particula con el plano
-static void Calculate_Plane_Collision(Coord n, Particle *part, float d) {
+static void Calculate_Plane_Collision(Coord n, Particle *part, float d, int solver) {
 	//Coeficiente de elasticidad
 	float E = 0.6f;
 
@@ -36,19 +36,38 @@ static void Calculate_Plane_Collision(Coord n, Particle *part, float d) {
 	float F = 0.5f;
 
 	//Calculate new position of the particle
-	part->currentPos.x = part->currentPos.x - (((1 + E) * ((n.x * part->currentPos.x) + (n.y * part->currentPos.y) + (n.z * part->currentPos.z)) + d) * n.x);
-	part->currentPos.y = part->currentPos.y - (((1 + E) * ((n.x * part->currentPos.x) + (n.y * part->currentPos.y) + (n.z * part->currentPos.z)) + d) * n.y);
-	part->currentPos.z = part->currentPos.z - (((1 + E) * ((n.x * part->currentPos.x) + (n.y * part->currentPos.y) + (n.z * part->currentPos.z)) + d) * n.z);
+	part->currentPos.x = part->currentPos.x - ((1 + E) * (((n.x * part->currentPos.x) + (n.y * part->currentPos.y) + (n.z * part->currentPos.z)) + d) * n.x);
+	part->currentPos.y = part->currentPos.y - ((1 + E) * (((n.x * part->currentPos.x) + (n.y * part->currentPos.y) + (n.z * part->currentPos.z)) + d) * n.y);
+	part->currentPos.z = part->currentPos.z - ((1 + E) * (((n.x * part->currentPos.x) + (n.y * part->currentPos.y) + (n.z * part->currentPos.z)) + d) * n.z);
 
-	//Calculate new velocity of the particle
-	part->currentV.x = part->currentV.x - ((1 + E) * ((n.x * part->currentV.x) + (n.y * part->currentV.y) + (n.z * part->currentV.z)) * n.x);
-	part->currentV.y = part->currentV.y - ((1 + E) * ((n.x * part->currentV.x) + (n.y * part->currentV.y) + (n.z * part->currentV.z)) * n.y);
-	part->currentV.z = part->currentV.z - ((1 + E) * ((n.x * part->currentV.x) + (n.y * part->currentV.y) + (n.z * part->currentV.z)) * n.z);
+	
+	if (solver == EULER) {
+		//Calculate new velocity of the particle
+		part->currentV.x = part->currentV.x - ((1 + E) * ((n.x * part->currentV.x) + (n.y * part->currentV.y) + (n.z * part->currentV.z)) * n.x);
+		part->currentV.y = part->currentV.y - ((1 + E) * ((n.x * part->currentV.x) + (n.y * part->currentV.y) + (n.z * part->currentV.z)) * n.y);
+		part->currentV.z = part->currentV.z - ((1 + E) * ((n.x * part->currentV.x) + (n.y * part->currentV.y) + (n.z * part->currentV.z)) * n.z);
 
-	//apply friction
-	part->currentV.x = part->currentV.x - F * Calculate_V_Tangential(n, part).x;
-	part->currentV.y = part->currentV.y - F * Calculate_V_Tangential(n, part).y;
-	part->currentV.z = part->currentV.z - F * Calculate_V_Tangential(n, part).z;
+		//apply friction on EULER
+		part->currentV.x = part->currentV.x - F * Calculate_V_Tangential(n, part).x;
+		part->currentV.y = part->currentV.y - F * Calculate_V_Tangential(n, part).y;
+		part->currentV.z = part->currentV.z - F * Calculate_V_Tangential(n, part).z;
+	}
+	if (solver == VERLET) {
+		//Mirroring the last pos, so we can calculate new direction properly
+		// P = P' - 2(n·P' + d) · n
+		part->lastPos.x = part->lastPos.x - (2 * ((n.x * part->lastPos.x) + (n.y * part->lastPos.y) + (n.z * part->lastPos.z) + d) * n.x);
+		part->lastPos.y = part->lastPos.y - (2 * ((n.x * part->lastPos.x) + (n.y * part->lastPos.y) + (n.z * part->lastPos.z) + d) * n.y);
+		part->lastPos.z = part->lastPos.z - (2 * ((n.x * part->lastPos.x) + (n.y * part->lastPos.y) + (n.z * part->lastPos.z) + d) * n.z);
+
+		//apply Friction and elasticity
+		int alpha = 1 - E; //elasticity
+		//friction uses the raw variable F of friction
+
+		// P = P + alpha * Vn + F * Vt
+		part->lastPos.x = part->lastPos.x + (alpha * Calculate_V_Normal(n, part).x) + (F * Calculate_V_Tangential(n, part).x);
+		part->lastPos.y = part->lastPos.y + (alpha * Calculate_V_Normal(n, part).y) + (F * Calculate_V_Tangential(n, part).y);
+		part->lastPos.z = part->lastPos.z + (alpha * Calculate_V_Normal(n, part).z) + (F * Calculate_V_Tangential(n, part).z);
+	}
 }
 
 //bool que calcula si hay colision con un plano donde n = normal del plano, part = Particula y d = un punto del plano
@@ -67,7 +86,7 @@ static bool Check_Plane_Collision(Coord n, Particle *part, float d) {
 }
 
 //Calcula la colision con la caja contenedora
-static void Box_Collision(Particle *part) {
+static void Box_Collision(Particle *part, int solver) {
 	Coord n;
 	Coord p;
 
@@ -80,54 +99,50 @@ static void Box_Collision(Particle *part) {
 	n = { 0.f,1.f,0.f };
 	p = { -5.f,0.f,-5.f };
 	if (Check_Plane_Collision(n, part, Calculate_d(n, p))) {
-		Calculate_Plane_Collision(n, part, Calculate_d(n, p));
+		Calculate_Plane_Collision(n, part, Calculate_d(n, p), solver);
 	}
 
 	//Collision with plane_left
 	 n = { 1.f,0.f,0.f };
 	 p = { -5.f,0.f,-5.f };
 	if (Check_Plane_Collision(n, part, Calculate_d(n, p))) {
-		Calculate_Plane_Collision(n, part, Calculate_d(n, p));
+		Calculate_Plane_Collision(n, part, Calculate_d(n, p), solver);
 	}
 
 	//Collision with plane_back
 	 n = { 0.f,0.f,1.f };
 	 p = { -5.f,0.f,-5.f };
 	if (Check_Plane_Collision(n, part, Calculate_d(n, p))) {
-		Calculate_Plane_Collision(n, part, Calculate_d(n, p));
+		Calculate_Plane_Collision(n, part, Calculate_d(n, p), solver);
 	}
 
 	//Collision with plane_front
 	n = { 0.f,0.f,-1.f };
 	p = { 5.f,10.f,5.f };
 	if (Check_Plane_Collision(n, part, Calculate_d(n, p))) {
-		Calculate_Plane_Collision(n, part, Calculate_d(n, p));
+		Calculate_Plane_Collision(n, part, Calculate_d(n, p), solver);
 	}
 
 	//Collision with plane_right
 	n = { -1.f,0.f,0.f };
 	p = { 5.f,10.f,5.f };
 	if (Check_Plane_Collision(n, part, Calculate_d(n, p))) {
-		Calculate_Plane_Collision(n, part, Calculate_d(n, p));
+		Calculate_Plane_Collision(n, part, Calculate_d(n, p), solver);
 	}
 
 	//Collision with plane_top
 	 n = { 0.f,-1.f,0.f };
 	 p = { 5.f,10.f,5.f };
 	if (Check_Plane_Collision(n, part, Calculate_d(n, p))) {
-		Calculate_Plane_Collision(n, part, Calculate_d(n, p));
-	}
-
-	
-
-	
+		Calculate_Plane_Collision(n, part, Calculate_d(n, p), solver);
+	}	
 }
 
 //Calcula TODAS las colisiones del programa
-static void Collision_Manager(Particle *part) {
+static void Collision_Manager(Particle *part, int solver) {
 	
 	//Check collision with BOX
-	Box_Collision(part);
+	Box_Collision(part, solver);
 }
 
 

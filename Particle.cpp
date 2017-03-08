@@ -3,13 +3,13 @@
 
 Particle::Particle() {
 	//setup the initial parameters (position)
-	currentPos.x = 0;
-	currentPos.y = 5;
-	currentPos.z = 0;
+	currentPos.x = 0.f;
+	currentPos.y = 5.f;
+	currentPos.z = 0.f;
 
-	lastPos.x = (((float)rand() / RAND_MAX) * 10.f - 5.f) * (1 / 30);
-	lastPos.y = (((float)rand() / RAND_MAX) * 10.f - 5.f) * (1 / 30);
-	lastPos.z = (((float)rand() / RAND_MAX) *  10.f - 5.f) * (1 / 30);
+	lastPos.x = (((float)rand() / RAND_MAX) * 10.f - 5.f) * (1.f / 30.f);
+	lastPos.y = (((float)rand() / RAND_MAX) * 10.f - 5.f) * (1.f / 30.f);
+	lastPos.z = (((float)rand() / RAND_MAX) * 10.f - 5.f) * (1.f / 30.f);
 
 	//setup the initial speed
 	currentV.x = ((float)rand() / RAND_MAX) * 10.f - 5.f;
@@ -21,7 +21,7 @@ Particle::Particle() {
 	lastV.z = currentV.z;
 
 	//setup the life time of the particle
-	lifeTime = 5;
+	lifeTime = 5.f;
 }
 
 Particle::~Particle() {
