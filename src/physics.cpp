@@ -51,13 +51,13 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 	if (solver == EULER) {
 		for (int i = 0; i < SHRT_MAX; i++) {
 			Euler_Solver(&partArray[i], dt);
-			Collision_Manager(&partArray[i]);
+			Collision_Manager(&partArray[i], solver);
 		}
 	}
 	else if (solver == VERLET) {
 		for (int i = 0; i < SHRT_MAX; i++) {
 			Verlet_Solver(&partArray[i], dt);
-			Collision_Manager(&partArray[i]);
+			Collision_Manager(&partArray[i], solver);
 		}
 	}
 	else {
