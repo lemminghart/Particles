@@ -32,7 +32,7 @@ void GUI() {
 
 void PhysicsInit() { //inicializar aqui las particulas
 	//TODO
-
+	
 	for (int i = 0; i < SHRT_MAX; i++) {
 		Particle temp;
 		partArray.push_back(temp);
