@@ -3,12 +3,13 @@
 
 Particle::Particle() {
 	//setup the life time of the particle
-	lifeTime = 5;
+	lifeTime = 3;
+	alive = false;
 
-	if (init == WATERFALL) {
+	if (emitter == WATERFALL) {
 		currentPos.x = ((float)rand() / RAND_MAX) * 10.f - 5.f;
 		currentPos.y = 9.9f;
-		currentPos.z = 0.f;
+		currentPos.z = ((float)rand() / RAND_MAX) * 2.f - 1.f;
 
 		currentV.x = 0;
 		currentV.y = 0;
@@ -22,7 +23,7 @@ Particle::Particle() {
 		lastV.y = currentV.y;
 		lastV.z = currentV.z;
 	}
-	else if (init == FOUNTAIN) {
+	else if (emitter == FOUNTAIN) {
 		currentPos.x = 0.f;
 		currentPos.y = 3.f;
 		currentPos.z = 0.f;
@@ -39,7 +40,7 @@ Particle::Particle() {
 		lastV.y = currentV.y;
 		lastV.z = currentV.z;
 	}
-	if (init == BASIC) {
+	if (emitter == BASIC) {
 		//Basic initialization
 
 		//setup the initial parameters (position)

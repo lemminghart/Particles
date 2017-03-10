@@ -1,5 +1,6 @@
 #include <imgui\imgui.h>
 #include <imgui\imgui_impl_glfw_gl3.h>
+#include <iostream>
 
 #include <glm\gtc\type_ptr.hpp>
 
@@ -14,6 +15,17 @@ namespace LilSpheres {
 	extern void updateParticles(int startIdx, int count, float* array_data);
 	extern void drawParticles(int startIdx, int count);
 }
+
+namespace Utils { //Namespace para manejar variables propias del sistema
+	//time
+	extern float percent = 0.f;
+	//particles
+	extern int particlesPerSecond = 1000;
+	//solver
+	extern int solver = EULER; //CAN BE EULER or VERLET
+}
+
+using namespace Utils;
 
 bool show_test_window = false;
 void GUI() {
@@ -44,19 +56,33 @@ void PhysicsInit() { //inicializar aqui las particulas
 void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 	//TODO
 
-	int solver = EULER;
-	//int solver = EULER;
+	int temp_counter = 0;
+
+	//PhysicsUpdate se llama 10 veces por segundo, y cada vez genera X particulas nuevas
+	for (int i = 0; i < SHRT_MAX; i++) {
+		if (partArray[i].alive == false && temp_counter < particlesPerSecond/10) {
+			partArray[i].alive = true;
+			partArray[i].lifeTime = 3.f;
+			temp_counter++;
+		}
+	}
+
+
 
 	if (solver == EULER) {
 		for (int i = 0; i < SHRT_MAX; i++) {
-			Euler_Solver(&partArray[i], dt);
-			Collision_Manager(&partArray[i], solver);
+			if (partArray[i].alive) {
+				Euler_Solver(&partArray[i], dt);
+				Collision_Manager(&partArray[i], solver);
+			}
 		}
 	}
 	else if (solver == VERLET) {
 		for (int i = 0; i < SHRT_MAX; i++) {
-			Verlet_Solver(&partArray[i], dt);
-			Collision_Manager(&partArray[i], solver);
+			if (partArray[i].alive) {
+				Verlet_Solver(&partArray[i], dt);
+				Collision_Manager(&partArray[i], solver);
+			}
 		}
 	}
 	else {
@@ -67,14 +93,38 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 
 	float *partVerts = new float[SHRT_MAX * 3];
 	for (int i = 0; i < SHRT_MAX; ++i) {
-		partVerts[i * 3 + 0] = partArray[i].currentPos.x;
-		partVerts[i * 3 + 1] = partArray[i].currentPos.y;
-		partVerts[i * 3 + 2] = partArray[i].currentPos.z;
+		if (partArray[i].alive) {
+			partVerts[i * 3 + 0] = partArray[i].currentPos.x;
+			partVerts[i * 3 + 1] = partArray[i].currentPos.y;
+			partVerts[i * 3 + 2] = partArray[i].currentPos.z;
+		}
 	}
 
 	//updatea las particulas
 	LilSpheres::updateParticles(0, SHRT_MAX, partVerts);
 	delete[] partVerts;
+
+	//aqui entra cada 1 segundo
+	if (percent > 0.33f) {
+		std::cout << "------------------" << std::endl;
+
+		//reducimos la vida de las particulas vivas
+		for (int i = 0; i < SHRT_MAX; i++) {
+			if (partArray[i].alive) {
+				partArray[i].lifeTime--;
+				//cambiamos el estado de las particulas que hayan muerto
+				if (partArray[i].lifeTime <= 0.f) {
+					partArray[i].alive = false;
+				}
+			}
+		}
+		
+		
+		//bajamos el contador a 0 para que al segundo vuelva a entrar aqui
+		percent = 0;
+	}
+
+	percent += dt; //contador incremental
 }
 void PhysicsCleanup() { //hacer delete de todos los new, etc
 	
