@@ -18,11 +18,12 @@ namespace LilSpheres {
 
 namespace Utils { //Namespace para manejar variables propias del sistema
 	//time
+	int time = 0;
 	extern float percent = 0.f;
 	//particles
-	extern int particlesPerSecond = 100;
+	extern int particlesPerSecond = 1000;
 	//solver
-	extern int solver = EULER; //CAN BE EULER or VERLET
+	extern int solver = VERLET; //CAN BE EULER or VERLET
 }
 
 using namespace Utils;
@@ -62,10 +63,10 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 	for (int i = 0; i < SHRT_MAX; i++) {
 		if (partArray[i].alive == false && temp_counter < particlesPerSecond/10) {
 			partArray[i].~Particle();
-			std::cout << "Particle DESTROYED" << std::endl;
+			std::cout << "Particle " << i << " DESTROYED" << std::endl;
 			partArray[i] = *new Particle;
 			partArray[i].alive = true;
-			std::cout << "Particle CREATED" << std::endl;
+			std::cout << "Particle " << i << " CREATED" << std::endl;
 			temp_counter++;
 		}
 	}
@@ -109,7 +110,8 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 
 	//aqui entra cada 1 segundo
 	if (percent > 0.33f) {
-		std::cout << "1 sec" << std::endl;
+		time++;
+		std::cout << "TIME:" << time << std::endl;
 
 		//reducimos la vida de las particulas vivas
 		for (int i = 0; i < SHRT_MAX; i++) {
