@@ -3,7 +3,7 @@
 
 Particle::Particle() {
 	//setup the life time of the particle
-	lifeTime = 3;
+	lifeTime = 10;
 	alive = false;
 
 	if (emitter == WATERFALL) {
@@ -12,11 +12,11 @@ Particle::Particle() {
 		currentPos.z = ((float)rand() / RAND_MAX) * 2.f - 1.f;
 
 		currentV.x = 0;
-		currentV.y = 0;
+		currentV.y = ((float)rand() / RAND_MAX) - 1.f;
 		currentV.z = 0;
 
 		lastPos.x = currentPos.x;
-		lastPos.y = currentPos.y;
+		lastPos.y = currentPos.y - currentV.y * (1.f / 30.f);
 		lastPos.z = currentPos.z;
 
 		lastV.x = currentV.x;

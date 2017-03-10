@@ -20,7 +20,7 @@ namespace Utils { //Namespace para manejar variables propias del sistema
 	//time
 	extern float percent = 0.f;
 	//particles
-	extern int particlesPerSecond = 1000;
+	extern int particlesPerSecond = 100;
 	//solver
 	extern int solver = EULER; //CAN BE EULER or VERLET
 }
@@ -61,8 +61,11 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 	//PhysicsUpdate se llama 10 veces por segundo, y cada vez genera X particulas nuevas
 	for (int i = 0; i < SHRT_MAX; i++) {
 		if (partArray[i].alive == false && temp_counter < particlesPerSecond/10) {
+			partArray[i].~Particle();
+			std::cout << "Particle DESTROYED" << std::endl;
+			partArray[i] = *new Particle;
 			partArray[i].alive = true;
-			partArray[i].lifeTime = 3.f;
+			std::cout << "Particle CREATED" << std::endl;
 			temp_counter++;
 		}
 	}
@@ -106,7 +109,7 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 
 	//aqui entra cada 1 segundo
 	if (percent > 0.33f) {
-		std::cout << "------------------" << std::endl;
+		std::cout << "1 sec" << std::endl;
 
 		//reducimos la vida de las particulas vivas
 		for (int i = 0; i < SHRT_MAX; i++) {
