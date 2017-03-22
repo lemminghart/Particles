@@ -17,6 +17,8 @@ static void Euler_Solver(Particle *part, float dt) {
 	part->currentPos.y = part->currentPos.y + (dt * part->currentV.y);
 	part->currentPos.z = part->currentPos.z + (dt * part->currentV.z);
 
+	//funcion calcular fuerzas
+
 	//Calculate the new velocity
 	// V = V. + dt * (F/m)[acceleration]
 	//We only need to recalculate the V on Y, it's the only one affected by external force
