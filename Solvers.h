@@ -25,7 +25,7 @@ static void Euler_Solver(Particle *part, float dt) {
 
 static void Verlet_Solver(Particle *part, float dt) {
 	//set the current position & speed as the last
-	Coord tmp = part->currentPos;
+	glm::vec3 tmp = part->currentPos;
 	part->lastV = part->currentV;
 
 	//Calculate the new position

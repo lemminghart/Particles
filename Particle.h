@@ -1,16 +1,17 @@
 #pragma once
 #include <vector>
-
-struct Coord { float x, y, z; };
+#include <GL\glew.h>
+#include <glm\gtc\type_ptr.hpp>
+#include <glm\gtc\matrix_transform.hpp>
 
 enum Type {WATERFALL = 0, FOUNTAIN = 1, BASIC = 2};
 
 class Particle {
 public:
-	Coord currentPos, lastPos; //Stores Current and Last Position
-	Coord currentV, lastV; //Stores Current and Last Velocity
+	glm::vec3 currentPos, lastPos; //Stores Current and Last Position
+	glm::vec3 currentV, lastV; //Stores Current and Last Velocity
 	float lifeTime; //Life time of the particle
-	Type emitter = FOUNTAIN; //type of initialization
+	Type emitter = WATERFALL; //type of initialization
 	bool alive;
 
 	Particle();

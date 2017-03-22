@@ -16,6 +16,13 @@ namespace LilSpheres {
 	extern void drawParticles(int startIdx, int count);
 }
 
+namespace Sphere {
+	extern void setupSphere(glm::vec3 pos = glm::vec3(0.f, 1.f, 0.f), float radius = 1.f);
+	extern void cleanupSphere();
+	extern void updateSphere(glm::vec3 pos, float radius = 1.f);
+	extern void drawSphere();
+}
+
 namespace Utils { //Namespace para manejar variables propias del sistema
 	//time
 	int time = 0;
@@ -23,10 +30,12 @@ namespace Utils { //Namespace para manejar variables propias del sistema
 	//particles
 	extern int particlesPerSecond = 1000;
 	//solver
-	extern int solver = VERLET; //CAN BE EULER or VERLET
+	extern int solver = EULER; //CAN BE EULER or VERLET
 }
 
 using namespace Utils;
+
+Esfera *esfera;
 
 bool show_test_window = false;
 void GUI() {
@@ -51,6 +60,7 @@ void PhysicsInit() { //inicializar aqui las particulas
 		partArray.push_back(temp);
 	}
 
+	esfera = new Esfera;
 
 
 }
@@ -77,7 +87,7 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 		for (int i = 0; i < SHRT_MAX; i++) {
 			if (partArray[i].alive) {
 				Euler_Solver(&partArray[i], dt);
-				Collision_Manager(&partArray[i], solver);
+				Collision_Manager(&partArray[i], esfera, solver);
 			}
 		}
 	}
@@ -85,7 +95,7 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 		for (int i = 0; i < SHRT_MAX; i++) {
 			if (partArray[i].alive) {
 				Verlet_Solver(&partArray[i], dt);
-				Collision_Manager(&partArray[i], solver);
+				Collision_Manager(&partArray[i], esfera, solver);
 			}
 		}
 	}
@@ -107,6 +117,9 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 	//updatea las particulas
 	LilSpheres::updateParticles(0, SHRT_MAX, partVerts);
 	delete[] partVerts;
+
+	//updatea la esfera
+	Sphere::updateSphere(esfera->pos, esfera->radius);
 
 	//aqui entra cada 1 segundo
 	if (percent > 0.33f) {
@@ -133,10 +146,5 @@ void PhysicsUpdate(float dt) { //calcular las afecciones sobre las particulas
 }
 void PhysicsCleanup() { //hacer delete de todos los new, etc
 	
-	//NOT NECESSARY. see PhysicsInit() on this document.
-	/*for (int i = 0; i < SHRT_MAX; i++) {
-		partArray.pop_back();
-	}
-
-	partArray.clear();*/
+	delete esfera;
 }
